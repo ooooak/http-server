@@ -1,0 +1,10 @@
+[package]
+name = "http-server"
+version = "0.1.0"
+authors = ["Ak <akshay.deep0@gmail.com>"]
+
+[dependencies]
+
+[[bin]]
+name = "http-server"
+path = "main.rs"
