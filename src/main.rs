@@ -1,13 +1,24 @@
+use std::env;
+use std::process;
+use std::str;
+use std::thread;
 use std::io::prelude::*;
 use std::net::TcpListener;
 use std::net::TcpStream;
-use std::str;
-use std::thread;
 use std::io::BufReader;
 
 mod response;
+mod file_io;
+
 
 fn main() {
+    match env::args().nth(1) {
+        Some(_) => (),
+        None => {
+            println!("{}", "Please specify the path of root directory.");
+            process::exit(0)
+        },
+    }
 
     let listener = TcpListener::bind("127.0.0.1:8080").unwrap();
     loop {
@@ -41,7 +52,6 @@ fn read_request_head(stream: &TcpStream) -> Vec<u8> {
     return buff;
 }
 
-
 fn handle_connection(mut stream: TcpStream) {
     let buff = read_request_head(&stream);
    
@@ -49,9 +59,9 @@ fn handle_connection(mut stream: TcpStream) {
 
     // custom press
     let resp = response::build(header);
-    match stream.write(resp.as_bytes()) {
-        Ok(size) => println!("{:?}", size),
-        Err(e) => println!("{:?}", e),
+    match stream.write(&resp) {
+        Ok(_) => (),
+        Err(_) => (),
     };
 
     stream.flush().expect("flush failed");
