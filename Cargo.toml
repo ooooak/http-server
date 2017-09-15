@@ -7,4 +7,4 @@ authors = ["Ak <akshay.deep0@gmail.com>"]
 
 [[bin]]
 name = "http-server"
-path = "main.rs"
+path = "src/main.rs"
