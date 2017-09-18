@@ -7,8 +7,9 @@ use std::net::TcpListener;
 use std::net::TcpStream;
 use std::io::BufReader;
 
-mod response;
+mod headers;
 mod file_io;
+mod response;
 
 
 fn main() {
@@ -54,11 +55,9 @@ fn read_request_head(stream: &TcpStream) -> Vec<u8> {
 
 fn handle_connection(mut stream: TcpStream) {
     let buff = read_request_head(&stream);
-   
-    let header = String::from_utf8(buff).expect("failed: from_utf8 vector");
+    let resp = response::create(buff);
 
     // custom press
-    let resp = response::build(header);
     match stream.write(&resp) {
         Ok(_) => (),
         Err(_) => (),

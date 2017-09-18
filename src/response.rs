@@ -2,11 +2,25 @@ use std::env;
 use std::path::PathBuf;
 use std::path::Path;
 use file_io;
+use headers;
 
-pub fn build(header: String) -> Vec<u8> {
-    let filename = get_filename_from_header(header);
+pub fn create(header_buffer: Vec<u8>) -> Vec<u8> {
 
-        if let Some(path) = file_path(filename) {
+    let header = headers::parse(header_buffer);
+    match header.path {
+        Ok(request_path) => {
+            if request_path == "/"{
+                    build_content(String::from("/index.html"))
+            }else {
+                build_content(request_path)
+            }
+        },
+        Err(_) => serv_404(), // handle error wisely
+    }
+}
+
+fn build_content(filename: String) ->  Vec<u8> {
+    if let Some(path) = file_path(filename) {
         if path.is_file(){
             final_response(200, file_io::read(path))
         }else{
@@ -17,15 +31,13 @@ pub fn build(header: String) -> Vec<u8> {
     }
 }
 
-pub fn get_filename_from_header(header: String) -> String {
-    let first = header.split("\r\n").nth(0).expect("unable to split header");
-    let request_path = first.split(" ").nth(1).expect("unable to find path");
-    if request_path == "/" {
-        String::from("/index.html")
-    }else{
-        String::from(request_path)    
-    }
-}
+// pub fn get_filename_from_header(header: String) -> String {
+//     if request_path == "/" {
+//         String::from("/index.html")
+//     }else{
+//         String::from(request_path)    
+//     }
+// }
 
 // TODO: add option to send path as argument
 pub fn file_path(filename: String) -> Option<PathBuf> {
