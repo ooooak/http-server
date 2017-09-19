@@ -1,11 +1,21 @@
 use std::string::FromUtf8Error;
 
 #[derive(Debug)]
+pub enum RequestType {
+    GET,
+    POST,
+    HEAD, 
+    PUT, 
+    DELETE, 
+    OPTIONS, 
+    CONNECT
+}
+
+#[derive(Debug)]
 pub struct Header {
-    // valid methods: GET, POST, HEAD, PUT, DELETE, OPTIONS and CONNECT
-    pub method: Result<String, FromUtf8Error>,
+    pub method: Option<RequestType>,
     pub path: Result<String, FromUtf8Error>,
-    pub html_version: Result<String, FromUtf8Error>
+    pub version: Option<f32>
 }
 
 #[derive(Debug)]
@@ -34,15 +44,15 @@ impl Source {
         self.header.get(self.pos).cloned()
     }
 
-    fn next(&mut self) -> Option<u8> {
-        if self.header.len() > self.pos {
-            self.pos += 1;
-            let val = self.header.get(self.pos).unwrap();
-            Some(val.clone())
-        } else {
-            None
-        }
-    }
+    // fn next(&mut self) -> Option<u8> {
+    //     if self.header.len() > self.pos {
+    //         self.pos += 1;
+    //         let val = self.header.get(self.pos).unwrap();
+    //         Some(val.clone())
+    //     } else {
+    //         None
+    //     }
+    // }
 
     // list of string 
     fn get_keyword(&mut self) -> Vec<u8> {
@@ -61,7 +71,7 @@ impl Source {
     fn get_char_chain(&mut self) -> Vec<u8> {
         let mut keyword = Vec::new();
         while let Some(token) = self.get() {
-            if self.is_word(&token) || self.is_num(&token) || token == b'/' || token == b'.'|| token == b'#' || token == b'-' {
+            if self.is_word(&token) || self.is_num(&token) || self.is_valid_char(&token) {
                 self.bump();
                 keyword.push(token);                   
             }else{
@@ -86,6 +96,15 @@ impl Source {
     fn is_num(&self, token: &u8) -> bool {
         match *token {
             b'0' | b'1' | b'2' | b'3' | b'4' | b'5' | b'6' | b'7' | b'8' | b'9'  => true,
+            _ => false,
+        }
+    }
+    fn is_valid_char(&self, token: &u8) -> bool {
+        match *token {
+            b'-' | b'.' | b'_' | b'~' | b':' | b'/' | b'?' | b'#' | b'[' | b']'|
+            b'@' | b'!' | b'$' | b'&' | b'\'' | b'(' | b')' | b'*' | b'+' | b','|
+            b';' | b'=' 
+              => true,
             _ => false,
         }
     }
@@ -116,10 +135,26 @@ pub fn parse(header_buffer: Vec<u8>) -> Header {
         }
     }
 
+    let method_enum = match &method[..] {
+        b"GET"       =>  Some(RequestType::GET),
+        b"POST"      =>  Some(RequestType::POST),
+        b"HEAD"      =>  Some(RequestType::HEAD), 
+        b"PUT"       =>  Some(RequestType::PUT), 
+        b"DELETE"    =>  Some(RequestType::DELETE), 
+        b"OPTIONS"   =>  Some(RequestType::OPTIONS), 
+        b"CONNECT"   =>  Some(RequestType::CONNECT),
+        _            => None
+    };
+
+
     Header{
-        method: String::from_utf8(method),
+        method: method_enum, 
         path: String::from_utf8(path),
-        html_version: String::from_utf8(html_version)
+        version: match &html_version[..] {
+            b"HTTP/1.0" =>  Some(1.0),
+            b"HTTP/2"   =>  Some(2.0),
+            _           =>  Some(1.1),
+        }
     }
 }
 

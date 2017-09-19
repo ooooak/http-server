@@ -19,7 +19,7 @@ pub fn create(header_buffer: Vec<u8>) -> Vec<u8> {
     }
 }
 
-fn build_content(filename: String) ->  Vec<u8> {
+fn build_content(filename: String) -> Vec<u8> {
     if let Some(path) = file_path(filename) {
         if path.is_file(){
             final_response(200, file_io::read(path))
