@@ -44,16 +44,6 @@ impl Source {
         self.header.get(self.pos).cloned()
     }
 
-    // fn next(&mut self) -> Option<u8> {
-    //     if self.header.len() > self.pos {
-    //         self.pos += 1;
-    //         let val = self.header.get(self.pos).unwrap();
-    //         Some(val.clone())
-    //     } else {
-    //         None
-    //     }
-    // }
-
     // list of string 
     fn get_keyword(&mut self) -> Vec<u8> {
         let mut keyword = Vec::new();

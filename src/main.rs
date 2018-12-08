@@ -1,6 +1,5 @@
 use std::env;
 use std::process;
-use std::str;
 use std::thread;
 use std::io::prelude::*;
 use std::net::TcpListener;
